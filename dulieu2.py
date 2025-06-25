@@ -2,6 +2,7 @@ import threading
 import time
 from collections import defaultdict
 from zlapi import ZaloAPI, ThreadType, Message
+from zlapi.models import Mention  # Thêm dòng này để dùng Mention
 from config import API_KEY, SECRET_KEY, IMEI, SESSION_COOKIES
 
 
@@ -19,7 +20,6 @@ class Bot(ZaloAPI):
         self.running = False
 
     def fetch_group_info(self):
-        """Lấy danh sách tất cả các nhóm đang tham gia"""
         try:
             all_groups = self.fetchAllGroups()
             group_list = []
@@ -33,7 +33,6 @@ class Bot(ZaloAPI):
             return []
 
     def display_group_menu_grouped(self, groups):
-        """Hiển thị danh sách nhóm, phân theo chữ cái đầu"""
         if not groups:
             print("Không tìm thấy nhóm nào.")
             return None
@@ -54,7 +53,6 @@ class Bot(ZaloAPI):
         return flat_list
 
     def select_group(self):
-        """Cho người dùng chọn nhóm để gửi tin nhắn"""
         groups = self.fetch_group_info()
         if not groups:
             return None
@@ -73,10 +71,10 @@ class Bot(ZaloAPI):
                 print("Vui lòng nhập số hợp lệ.")
 
     def send_plain_message(self, thread_id, message_text):
-        """Gửi 1 tin nhắn văn bản đơn vào nhóm"""
         try:
+            mention = Mention("-1", offset=0, length=len(message_text))  # Thêm mention @All
             self.send(
-                Message(text=message_text),
+                Message(text=message_text, mention=mention),
                 thread_id=thread_id,
                 thread_type=ThreadType.GROUP
             )
@@ -85,7 +83,6 @@ class Bot(ZaloAPI):
             print(f"Lỗi khi gửi tin nhắn: {e}")
 
     def send_full_file_content(self, thread_id, delay):
-        """Gửi toàn bộ nội dung file ngontreo.txt lặp lại theo delay"""
         filename = "ngontreo.txt"
         try:
             with open(filename, 'r', encoding='utf-8') as f:
@@ -105,7 +102,6 @@ class Bot(ZaloAPI):
             print(f"Lỗi khi gửi nội dung: {e}")
 
     def stop_sending(self):
-        """Dừng gửi nội dung"""
         self.running = False
         print("Đã dừng gửi tin nhắn.")
 
